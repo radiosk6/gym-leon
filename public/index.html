@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Gym LEON</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.1/firebase-database.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.22/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-firestore.js"></script>
+    <script>
+        // Your web app's Firebase configuration
+        var firebaseConfig = {
+            apiKey: "AIzaSyDb3c0_c3r15kIwa6CTmG8jLYdZs_HNsIQ",
+            authDomain: "gym-leon.firebaseapp.com",
+            projectId: "gym-leon",
+            storageBucket: "gym-leon.appspot.com",
+            messagingSenderId: "1056691531489",
+            appId: "1:1056691531489:web:cfce628ffb0cea2b1c11a0"
+        };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        var db = firebase.firestore();
+    </script>
+
+
+</head>
+
+<body>
+    <div class="menu">
+        <ion-icon name="menu-outline"></ion-icon>
+        <ion-icon name="close-outline"></ion-icon>
+    </div>
+
+    <div class="barra-lateral">
+        <div>
+            <div class="nombre-pagina">
+                <ion-icon id="cloud" name="barbell-outline"></ion-icon>
+                <span>Gym Leon</span>
+            </div>
+
+        </div>
+
+        <nav class="navegacion">
+            <ul>
+                <li>
+                    <a href="#visitsiniciada">
+                        <ion-icon name="person-add"></ion-icon>
+                        <span>Ventas del dia</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#visitsfin">
+                        <ion-icon name="list"></ion-icon>
+                        <span>Resumen de ventas</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#clilist">
+                        <ion-icon name="happy"></ion-icon>
+                        <span>clientes</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#cliedit">
+                        <ion-icon name="medical"></ion-icon>
+                        <span>Ajustes de clientes</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="#proList">
+                        <ion-icon name="cart"></ion-icon>
+                        <span>Tienda</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#store">
+                        <ion-icon name="basket"></ion-icon>
+                        <span>Ajustes de Tienda</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#susList">
+                        <ion-icon name="today"></ion-icon>
+                        <span>Subscripciones</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#subscriptions">
+                        <ion-icon name="git-branch"></ion-icon>
+                        <span>Ajustes de subscripciones</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="#finanzas">
+                        <ion-icon name="card"></ion-icon>
+                        <span>finanzas</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#estadisticas">
+                        <ion-icon name="analytics"></ion-icon>
+                        <span>Estadisticas</span>
+                    </a>
+                </li>
+
+
+            </ul>
+        </nav>
+
+        <div>
+            <div class="linea"></div>
+
+            <div class="modo-oscuro">
+                <div class="info">
+                    <ion-icon name="moon-outline"></ion-icon>
+                    <span>Drak Mode</span>
+                </div>
+                <div class="switch">
+                    <div class="base">
+                        <div class="circulo">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="usuario">
+
+                <div class="info-usuario">
+                    <div class="nombre-email">
+                        <span class="nombre">© 2024 Roony</span>
+                        <span class="email">pedrora3@gmail.com</span>
+                    </div>
+                    <ion-icon name="ellipsis-vertical-outline"></ion-icon>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <main>
+        <section id="visitsiniciada">
+            <h2>Visitas</h2>
+            <div id="new-visit-form">
+                <h3>Registrar Visita</h3>
+                
+                <!-- Select que actúa como buscador -->
+                <select id="visit-client-select" onchange="updateClientName()" oninput="filterClients()">
+                    <option value="">Seleccione un cliente</option>
+                    <!-- Aquí se incluirán las opciones dinámicamente -->
+                    <option value="1">Cliente 1</option>
+                    <option value="2">Cliente 2</option>
+                    <option value="3">Cliente 3</option>
+                    <!-- Añade más opciones según tu lógica -->
+                </select>
+                
+                <input type="hidden" id="visit-client-name">
+                <button class="bubble-button" onclick="registerVisit()">
+                    <ion-icon name="add-outline"></ion-icon> Visita
+                </button>
+            </div>
+            
+            <div>
+                <h3>Visitas Iniciadas</h3>
+                <ul id="started-visit-list"></ul>
+            </div>
+
+        </section>
+        <div id="product-modal" class="modal hidden">
+            <div class="modal-content">
+                <h3>Añadir Producto</h3>
+                <select id="product-select"></select>
+                <input type="number" id="product-quantity" placeholder="Cantidad" min="1" />
+                <button class="button" onclick="confirmAddProduct()">Añadir Producto</button>
+
+                <button class="button" onclick="closeProductModal()">Cancelar</button>
+            </div>
+        </div>
+        <section id="visitsfin">
+            <div id="visit-list-section">
+                <h3>Listado de Visitas</h3>
+                <label for="visit-date-filter">Filtrar por fecha:</label>
+                <input type="date" id="visit-date-filter" onchange="loadVisits()">
+                <h2>Resumen de Ventas</h2>
+                <div id="summary">
+                    <p id="summary-date"></p>
+                    <p id="summary-totalSales"></p>
+                    <p id="summary-totalVisits"></p>
+                </div>
+                <h3>Visitas Finalizadas</h3>
+                <ul id="finished-visit-list"></ul>
+
+            </div>
+        </section>
+
+        <section id="cliedit">
+            <h2>Clientes</h2>
+
+            <div id="new-client-form" class="form-container">
+                <h3>Nuevo Cliente</h3>
+                <input type="text" id="client-name" placeholder="Nombre del cliente">
+                <input type="text" id="client-alias" placeholder="Alias del cliente">
+                <input type="number" id="client-age" placeholder="Edad del cliente">
+                <button onclick="addClient()">Agregar Cliente</button>
+            </div>
+
+            <div id="edit-client-form" class="form-container">
+                <h3>Editar Cliente</h3>
+                <select id="edit-client-select" onchange="loadClientDataForEdit()">
+                    <option value="">Seleccione un cliente</option>
+                </select>
+                <input type="text" id="edit-client-name" placeholder="Nuevo nombre">
+                <input type="text" id="edit-client-alias" placeholder="Nuevo alias">
+                <input type="number" id="edit-client-age" placeholder="Nueva edad">
+                <input type="number" id="edit-client-ranking" placeholder="Nuevo ranking">
+                <button onclick="editClient()">Actualizar Cliente</button>
+            </div>
+
+            <div id="delete-client-form" class="form-container">
+                <h3>Eliminar Cliente</h3>
+                <select id="delete-client-select">
+                    <option value="">Seleccione un cliente</option>
+                </select>
+                <button onclick="deleteClient()">Eliminar Cliente</button>
+            </div>
+        </section>
+        <section id="clilist">
+            <h2>Listado de Clientes</h2>
+            <label for="client-filter">Ordenar por:</label>
+            <select id="client-filter" onchange="fetchClientList()">
+                <option value="name">Nombre</option>
+                <option value="age">Edad</option>
+                <option value="ranking">Ranking</option>
+            </select>
+            <div id="client-list"></div>
+        </section>
+
+        <section id="store">
+            <h2>Tienda</h2>
+
+            <div id="entry-form" class="form-container">
+                <h3>Agregar Productos</h3>
+                <input type="text" id="product-name" placeholder="Nombre del producto">
+                <input type="number" id="product-purchase-price" placeholder="Precio de compra">
+                <input type="number" id="product-units" placeholder="Unidades que trae">
+                <input type="number" id="product-sale-price" placeholder="Precio de venta">
+                <input type="number" id="product-stock" placeholder="Cantidad en stock">
+                <textarea id="product-description" placeholder="Descripción del producto"></textarea>
+                <button onclick="addProduct()">Agregar Producto</button>
+            </div>
+
+            <div id="delete-form" class="form-container">
+                <h3>Eliminar Productos</h3>
+                <select id="delete-product-select"></select>
+                <button onclick="deleteProduct()">Eliminar Producto</button>
+            </div>
+
+            <div id="update-form" class="form-container">
+                <h3>Actualizar Stock, Precio y Descripción de Productos</h3>
+                <select id="product-update-id" onchange="loadProductDataForUpdate()">
+                    <option value="">Seleccione un producto</option>
+                </select>
+                <input type="number" id="product-update-stock" placeholder="Nuevo stock">
+                <input type="number" id="product-update-price" placeholder="Nuevo precio">
+                <textarea id="product-update-description" placeholder="Nueva descripción"></textarea>
+                <button onclick="updateProduct()">Actualizar Producto</button>
+            </div>
+        </section>
+
+        <section id="proList">
+            <h2>Listado de Productos</h2>
+            <table id="products-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Nombre</th>
+                        <th>Precio de Venta</th>
+                        <th>Stock</th>
+                        <th>Descripción</th>
+                    </tr>
+                </thead>
+                <tbody id="products"></tbody>
+            </table>
+        </section>
+        <section id="susList">
+            <div id="subscription-list" class="form-container">
+                <h3>Listado de Suscripciones</h3>
+                <label for="subscription-filter">Filtrar por:</label>
+                <select id="subscription-filter">
+                    <option value="endDate">Fecha de Vencimiento</option>
+                    <option value="startDate">Fecha de Inicio</option>
+                    <option value="duration">Duración</option>
+                </select>
+                <button onclick="printSubscriptions()">Imprimir</button>
+                <ul id="active-subscription-list"></ul>
+                <h3>Suscripciones vencidas</h3>
+                <ul id="inactive-subscription-list"></ul>
+            </div>
+        </section>
+        <section id="subscriptions">
+            <h2>Gestión de Suscripciones</h2>
+            <div id="add-subscription-form" class="form-container">
+                <h3>Añadir Suscripción</h3>
+                <form id="subscription-form">
+                    <label for="subscription-client-id">Cliente:</label>
+                    <select id="subscription-client-id"></select>
+                    <label for="subscription-duration">Duración (días):</label>
+                    <input type="number" id="subscription-duration">
+                    <label for="subscription-price">Precio de la suscripción:</label>
+                    <input type="number" id="subscription-price">
+                    <button type="submit">Agregar Suscripción</button>
+                </form>
+            </div>
+
+
+
+
+
+            <div id="edit-subscription-form" class="form-container">
+                <h3>Editar Suscripción</h3>
+                <form>
+                    <label for="edit-subscription-id">Suscripción:</label>
+                    <select id="edit-subscription-id"></select>
+                    <label for="edit-subscription-duration">Nueva Duración (días):</label>
+                    <input type="number" id="edit-subscription-duration" required>
+                    <button type="submit">Editar Suscripción</button>
+                </form>
+            </div>
+
+            <div id="delete-subscription-form" class="form-container">
+                <h3>Eliminar Suscripción</h3>
+                <form>
+                    <label for="delete-subscription-id">Suscripción:</label>
+                    <select id="delete-subscription-id"></select>
+                    <button type="submit">Eliminar Suscripción</button>
+                </form>
+            </div>
+        </section>
+
+        <section id="estadisticas">
+            <div>
+                <div id="finanzs">
+                    <h2>Estadísticas Financieras</h2>
+                    <label for="finanzafinStartDate">Fecha de inicio:</label>
+                    <input type="date" id="finanzafinStartDate">
+                    <label for="finanzafinEndDate">Fecha de fin:</label>
+                    <input type="date" id="finanzafinEndDate">
+                    <button id="finanzafinFetchBtn">Mostrar <ion-icon name="analytics"></ion-icon></button>
+                    <canvas id="finanzafinChart" width="400" height="200"></canvas>
+                </div>
+
+
+                <div>
+                    <h2>Estadísticas de Visitas</h2>
+                    <label for="startDate">Fecha de inicio:</label>
+                    <input type="date" id="startDate">
+                    <label for="endDate">Fecha de fin:</label>
+                    <input type="date" id="endDate">
+                    <button id="fetchVisitsBtn">Mostrar <ion-icon name="analytics"></ion-icon></button>
+                </div>
+                <canvas id="visitsChart" width="400" height="200"></canvas>
+
+                <div>
+                    <h2>Estadísticas de Productos Vendidos</h2>
+                    <label for="productStartDate">Fecha de inicio:</label>
+                    <input type="date" id="productStartDate">
+                    <label for="productEndDate">Fecha de fin:</label>
+                    <input type="date" id="productEndDate">
+                    <button id="fetchProductSalesBtn">Mostrar <ion-icon name="analytics"></ion-icon></button>
+                </div>
+                <canvas id="productSalesChart" width="400" height="200"></canvas>
+            </div>
+        </section>
+
+        <section id="finanzas">
+
+            <h2>Registrar Egresos</h2>
+            <form id="registro-egresos-form" class="cash-form"> <!-- Reutilizamos la clase .cash-form -->
+                <div class="cash-input-group"> <!-- Reutilizamos la clase .cash-input-group -->
+                    <label for="nombre">Nombre:</label>
+                    <input type="text" id="nombre" name="nombre" required>
+                </div>
+
+                <div class="cash-input-group"> <!-- Reutilizamos la clase .cash-input-group -->
+                    <label for="totaldegasto">Total de Gasto:</label>
+                    <input type="number" id="totaldegasto" name="totaldegasto" required>
+                </div>
+
+                <div class="cash-input-group"> <!-- Reutilizamos la clase .cash-input-group -->
+                    <label for="categoria">Categoría:</label>
+                    <select id="categoria" name="categoria" required>
+                        <!-- Las opciones serán agregadas por JavaScript -->
+                    </select>
+                </div>
+
+                <div class="cash-input-group"> <!-- Reutilizamos la clase .cash-input-group -->
+                    <label for="clasificacion">Clasificación:</label>
+                    <select id="clasificacion" name="clasificacion" required>
+                        <!-- Las opciones serán agregadas por JavaScript -->
+                    </select>
+                </div>
+
+                <button type="submit" class="submit-button">Registrar Gasto</button>
+                <!-- Reutilizamos la clase .submit-button -->
+            </form>
+
+
+
+            <form id="cash-count-form" class="cash-form">
+                <h3>Contar Efectivo en Caja</h3>
+
+                <div class="cash-input-group">
+                    <label for="q100">Q100:</label>
+                    <input type="number" id="q100" name="q100" value="0" min="0">
+                </div>
+
+                <div class="cash-input-group">
+                    <label for="q50">Q50:</label>
+                    <input type="number" id="q50" name="q50" value="0" min="0">
+                </div>
+
+                <div class="cash-input-group">
+                    <label for="q20">Q20:</label>
+                    <input type="number" id="q20" name="q20" value="0" min="0">
+                </div>
+
+                <div class="cash-input-group">
+                    <label for="q10">Q10:</label>
+                    <input type="number" id="q10" name="q10" value="0" min="0">
+                </div>
+
+                <div class="cash-input-group">
+                    <label for="q5">Q5:</label>
+                    <input type="number" id="q5" name="q5" value="0" min="0">
+                </div>
+
+                <div class="cash-input-group">
+                    <label for="q1">Q1:</label>
+                    <input type="number" id="q1" name="q1" value="0" min="0">
+                </div>
+
+                <div class="cash-input-group">
+                    <label for="q0_50">Q0.50:</label>
+                    <input type="number" id="q0_50" name="q0_50" value="0" min="0">
+                </div>
+
+                <div class="cash-input-group">
+                    <label for="q0_25">Q0.25:</label>
+                    <input type="number" id="q0_25" name="q0_25" value="0" min="0">
+                </div>
+
+                <button type="button" onclick="calculateTotalCash()">Calcular Total</button>
+            </form>
+
+            <div id="cash-summary"></div>
+
+
+
+            <div id="deudas">
+                <h2>Deudas</h2>
+
+                <div id="control-deudas">
+                    <h2>Ingreso de Deuda</h2>
+                    <form id="ingreso-deuda-form" class="cash-form"> <!-- Reutilizamos la clase .cash-form -->
+                        <div class="cash-input-group"> <!-- Reutilizamos la clase .cash-input-group -->
+                            <label for="clienteId">Cliente:</label>
+                            <select id="clienteId" required>
+                                <option value="">Cargando clientes...</option>
+                            </select>
+                        </div>
+
+                        <div class="cash-input-group"> <!-- Reutilizamos la clase .cash-input-group -->
+                            <label for="monto">Monto:</label>
+                            <input type="number" id="monto" required>
+                        </div>
+
+                        <button type="submit" class="submit-button">Ingresar Deuda</button>
+                        <!-- Reutilizamos la clase .submit-button -->
+                    </form>
+
+                    <h2>Pago de Deudas</h2>
+                    <form id="pago-deuda-form" class="cash-form"> <!-- Reutilizamos la clase .cash-form -->
+                        <div class="cash-input-group"> <!-- Reutilizamos la clase .cash-input-group -->
+                            <label for="deudaId">Selecciona una deuda:</label>
+                            <select id="deudaId" required>
+                                <option value="">Seleccione una deuda</option>
+                                <!-- Opciones de deudas se llenarán con JavaScript -->
+                            </select>
+                        </div>
+
+                        <div class="cash-input-group"> <!-- Reutilizamos la clase .cash-input-group -->
+                            <label for="abono">Monto a abonar:</label>
+                            <input type="number" id="abono" step="0.01" min="0" required>
+                        </div>
+
+                        <button type="submit" class="submit-button">Registrar Pago</button>
+                        <!-- Reutilizamos la clase .submit-button -->
+                    </form>
+                </div>
+            </div>
+
+            <h2>Deudas Activas</h2>
+            <table id="tabla-deudas-activas">
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Monto</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <!-- Modal para mostrar detalles de la deuda -->
+            <div id="modal-historial-deuda" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h2 id="modal-titulo">Historial de Deuda</h2>
+                    <div id="detalles-historial"></div>
+                    <button id="guardar-pdf">Guardar como PDF</button>
+                </div>
+            </div>
+
+
+
+
+
+            <h2>Deudas Pagadas</h2>
+            <table id="tabla-deudas-pagadas">
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Monto</th>
+                        <th>Descripción</th>
+                        <th>Fecha Ingreso</th>
+                        <th>Fecha Pago</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+
+
+            </div>
+
+            <div id="reportes">
+
+                <h1>Generación de Reportes Financieros</h1>
+                <form id="reporte-financiero">
+                    <label for="fecha-inicio">Fecha de Inicio:</label>
+                    <input type="date" id="fecha-inicio" name="fecha-inicio">
+
+                    <label for="fecha-fin">Fecha de Fin:</label>
+                    <input type="date" id="fecha-fin" name="fecha-fin">
+
+                    <button type="button" onclick="generateReport()">Generar Reporte</button>
+                </form>
+
+
+
+                <div id="reportResults">
+                    <h2>Reporte Financiero</h2>
+                    <p>Período: <span id="reportPeriod"></span></p>
+
+                    <h3>Resumen General</h3>
+                    <p>Total Ingresos: <span id="totalIncome"></span></p>
+                    <p>Total Gastos: <span id="totalExpenses"></span></p>
+                    <p>Balance Neto: <span id="netBalance"></span></p> <!-- Nuevo para balance neto -->
+
+                    <h3>Suscripciones</h3>
+                    <p>Total Suscripciones Vendidas: <span id="totalSubscriptions"></span></p>
+                    <p>Monto Total de Suscripciones: <span id="totalSubscriptionAmount"></span></p>
+
+                    <h3>Ventas de Productos</h3>
+                    <p>Cantidad Total de Productos Vendidos: <span id="totalProductsSold"></span></p>
+                    <p>Resumen de Productos Vendidos:</p>
+                    <ul id="productSalesSummary"></ul>
+
+                    <h3>Top 10 Clientes</h3>
+                    <ul id="topClients"></ul>
+                </div>
+
+
+
+                <h2>Reportes</h2>
+                <div id="reportes-generacion">
+                    <h3>Generación de reportes financieros</h3>
+                    <button onclick="generateMonthlyReport()">Generar Reporte Mensual</button>
+                    <button onclick="generateQuarterlyReport()">Generar Reporte Trimestral</button>
+                    <button onclick="generateAnnualReport()">Generar Reporte Anual</button>
+                </div>
+
+                <div id="analisis-proyecciones">
+
+                    <div id="analisis">
+                        <div id="reportResults">
+                            <!-- Campos existentes -->
+                            <h2>Reporte Financiero</h2>
+                            <p>Período: <span id="reportPeriod"></span></p>
+
+
+                            <!-- Proyecciones del siguiente mes -->
+                            <h3>Proyecciones para el Próximo Mes</h3>
+                            <p>Ingresos Proyectados: <span id="projectedIncome"></span></p>
+                            <p>Gastos Proyectados: <span id="projectedExpenses"></span></p>
+                            <p>Balance Neto Proyectado: <span id="projectedNetBalance"></span></p>
+                            <p>Suscripciones Proyectadas: <span id="projectedSubscriptions"></span></p>
+                            <p>Productos Vendidos Proyectados: <span id="projectedProductsSold"></span></p>
+                        </div>
+
+                    </div>
+                </div>
+                <div id="reportes-exportacion">
+                    <h3>Exportación de reportes</h3>
+                    <button onclick="exportReportCSV()">Exportar a CSV</button>
+                    <button onclick="exportReportPDF()">Exportar a PDF</button> <!-- Botón para exportar a PDF -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="js.js" defer></script>
+    <script src="addClient.js"></script>
+    <script src="addVisit.js"></script>
+    <script src="store.js"></script>
+    <script src="subscription.js"></script>
+    <script src="estadisticas.js"></script>
+    <script src="finanza.js"></script>
+    <script src="egresos.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/ionicons@latest/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://cdn.jsdelivr.net/npm/ionicons@latest/dist/ionicons/ionicons.js"></script>
+</body>
+
+</html>
